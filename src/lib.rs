@@ -73,32 +73,32 @@ print(count)"#;
 
 const AVERAGE: &str = r#"sum := 0
 count := 0
-done := false
-while not done {
+averaging := true
+while averaging {
     num := input("Enter a number:")
-    if num == "quit" {
-        done := true
+    if (num == "quit") {
+        averaging := false
     } else {
-        sum := sum + num
-        count := count + 1
+        sum := (sum + num)
+        count := (count + 1)
     }
 }
-print(sum / count)"#;
+print((sum / count))"#;
 
 const PI: &str = r#"sum := 0
 i := 0
 neg := false
 terms := input("Num terms:")
-while i < terms {
-    term := 1 / ((2 * i) + 1)
+while (i < terms) {
+    term := (1.0 / ((2.0 * i) + 1.0))
     if neg {
         term := -term
     }
-    sum := sum + term
+    sum := (sum + term)
     neg := not neg
-    i := i + 1
+    i := (i + 1)
 }
-print(4 * sum)"#;
+print((4 * sum))"#;
 
 /*
 // Seed the disk with some programs.
