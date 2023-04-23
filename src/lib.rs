@@ -70,7 +70,7 @@ impl Window {
         let mut border_char = '.';
         if self.in_use{
             border_char = '*';
-        }
+        } 
         for i in 0..self.vga.len(){
             for j in 0..self.vga[0].len(){
                 if i==0 || i == self.vga.len()-1 || j == 0 || j == self.vga[0].len()-1{
