@@ -22,8 +22,11 @@ static TICKS: AtomicCell<usize> = AtomicCell::new(0);
 
 fn cpu_loop() -> ! {
     let mut kernel = Kernel::new();
+    
     let mut last_tick = 0;
+    kernel.make_initial_files();
     kernel.draw();
+    
     loop {
         if let Some(key) = LAST_KEY.load() {
             LAST_KEY.store(None);
@@ -32,9 +35,9 @@ fn cpu_loop() -> ! {
         let current_tick = TICKS.load();
         if current_tick > last_tick {
             last_tick = current_tick;
-            kernel.draw_proc_status();
+            //kernel.draw_proc_status();
         }
-        kernel.run_one_instruction();
+        //kernel.run_one_instruction();
     }
 }
 

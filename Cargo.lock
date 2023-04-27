@@ -9,6 +9,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d468802bab17cbc0cc575e9b053f41e72aa36bfa6b7f55e3529ffa43161b97fa"
 
 [[package]]
+name = "bare_metal_map"
+version = "0.1.0"
+source = "git+https://github.com/gjf2a/bare_metal_map#91c0d594fa0d70c51ca2aa769302ee79f23e45a9"
+
+[[package]]
+name = "bare_metal_queue"
+version = "0.2.1"
+source = "git+https://github.com/gjf2a/bare_metal_queue#1bb258ebd3bf25e688ec10eafeeffdf421992bed"
+
+[[package]]
 name = "bit_field"
 version = "0.10.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -49,6 +59,28 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3c063cd8cc95f5c377ed0d4b49a4b21f632396ff690e8470c29b3359b346984b"
 dependencies = [
  "cfg-if",
+]
+
+[[package]]
+name = "file_system"
+version = "0.1.0"
+source = "git+https://github.com/ianc02/file_system#7a9644355d7a213d8b37b8de81d476deb0f20e10"
+dependencies = [
+ "ramdisk",
+]
+
+[[package]]
+name = "gc_headers"
+version = "0.1.0"
+source = "git+https://github.com/gjf2a/gc_headers#faf1ce8c11a0f6693f539bae15d75cd7a36a3c5e"
+
+[[package]]
+name = "gc_heap"
+version = "0.1.0"
+source = "git+https://github.com/ianc02/gc_heap_template#304eb2f9f6addf622751df2d7168a1ee6006834c"
+dependencies = [
+ "bare_metal_queue",
+ "gc_headers",
 ]
 
 [[package]]
@@ -131,9 +163,9 @@ checksum = "5c6f2d937e3b8d63449b01401e2bae4041bc9dd1129c2e3e0d239407cf6635ac"
 
 [[package]]
 name = "pic8259"
-version = "0.10.3"
+version = "0.10.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "761e92187c0fc0c3db574a512609df5fd99b0ee237132858281d68a0cdc189c8"
+checksum = "cb844b5b01db1e0b17938685738f113bfc903846f18932b378bc0eabfa40e194"
 dependencies = [
  "x86_64",
 ]
@@ -166,6 +198,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4f3208ce4d8448b3f3e7d168a73f5e0c43a61e32930de3bceeccedb388b6bf06"
 
 [[package]]
+name = "simple_interp"
+version = "0.1.0"
+source = "git+https://github.com/gjf2a/simple_interp#ec487091e59e5dd356d1bce96aec88e439f0e4df"
+dependencies = [
+ "bare_metal_map",
+ "bare_metal_queue",
+ "gc_headers",
+]
+
+[[package]]
 name = "spin"
 version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -177,12 +219,15 @@ version = "0.1.0"
 dependencies = [
  "bootloader",
  "crossbeam",
+ "file_system",
+ "gc_heap",
  "lazy_static",
  "num",
  "pc-keyboard",
  "pic8259",
  "pluggable_interrupt_os",
  "ramdisk",
+ "simple_interp",
  "spin",
  "uart_16550",
  "volatile 0.2.7",
