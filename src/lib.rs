@@ -16,6 +16,7 @@ use simple_interp::{Interpreter, InterpreterOutput, TickResult};
 // Get rid of some spurious VSCode errors
 use core::option::Option;
 use core::option::Option::None;
+use core::panic;
 use core::prelude::rust_2024::derive;
 use core::clone::Clone;
 use core::cmp::{PartialEq,Eq};
@@ -229,7 +230,7 @@ while (i < terms) {
 }
 print((4 * sum))"#;
 
-/*
+
 // Seed the disk with some programs.
 fn initial_files(disk: &mut FileSystem<MAX_OPEN, BLOCK_SIZE, NUM_BLOCKS, MAX_FILE_BLOCKS, MAX_FILE_BYTES, MAX_FILES_STORED, MAX_FILENAME_BYTES>) {
     for (filename, contents) in [
@@ -245,7 +246,7 @@ fn initial_files(disk: &mut FileSystem<MAX_OPEN, BLOCK_SIZE, NUM_BLOCKS, MAX_FIL
         disk.close(fd);
     }
 }
-*/
+
 
 impl Kernel {
     pub fn new() -> Self {
@@ -278,34 +279,52 @@ impl Kernel {
     }
 
     pub fn make_initial_files(&mut self){
-        let f1 = self.filesystem.open_create("hello").unwrap();
-        let f2 = self.filesystem.open_create("nums").unwrap();
-        let f3= self.filesystem.open_create("average").unwrap();
-        let f4 = self.filesystem.open_create("pi").unwrap();
-        let f5 = self.filesystem.open_create("countdown").unwrap();
-        let f6 = self.filesystem.open_create("addOne").unwrap();
+        // let f1 = self.filesystem.open_create("hello").unwrap();
+        // let f2 = self.filesystem.open_create("nums").unwrap();
+        // let f3= self.filesystem.open_create("average").unwrap();
+        // let f4 = self.filesystem.open_create("pi").unwrap();
+        // let f5 = self.filesystem.open_create("countdown").unwrap();
+        // let f6 = self.filesystem.open_create("addOne").unwrap();
 
 
 
-        self.filesystem.write(f1, HELLO.as_bytes()).unwrap();
-        self.filesystem.close(f1);
+        // self.filesystem.write(f1, HELLO.as_bytes()).unwrap();
+        // self.filesystem.close(f1);
 
-        self.filesystem.write(f2, NUMS.as_bytes()).unwrap();
-        self.filesystem.close(f2);
+        // self.filesystem.write(f2, NUMS.as_bytes()).unwrap();
+        // self.filesystem.close(f2);
 
-        self.filesystem.write(f3, AVERAGE.as_bytes()).unwrap();
-        self.filesystem.close(f3);
+        // self.filesystem.write(f3, AVERAGE.as_bytes()).unwrap();
+        // self.filesystem.close(f3);
 
-        self.filesystem.write(f4, PI.as_bytes()).unwrap();
-        self.filesystem.close(f4);
+        // self.filesystem.write(f4, PI.as_bytes()).unwrap();
+        // self.filesystem.close(f4);
 
-        self.filesystem.write(f5, COUNTDOWN.as_bytes()).unwrap();
-        self.filesystem.close(f5);
+        // self.filesystem.write(f5, COUNTDOWN.as_bytes()).unwrap();
+        // self.filesystem.close(f5);
 
-        self.filesystem.write(f6, ADD_ONE.as_bytes()).unwrap();
-        self.filesystem.close(f6);
+        // self.filesystem.write(f6, ADD_ONE.as_bytes()).unwrap();
+        // self.filesystem.close(f6);
+
+        initial_files(&mut self.filesystem);
 
 
+        // let u8_name =self.filesystem.list_directory().unwrap().1[3];
+        // let str_name = core::str::from_utf8(&u8_name).unwrap();
+        // println!("{str_name}");
+        // let fd = self.filesystem.open_read("pi").unwrap();
+        // println!("{fd}");
+        // let mut content_buffer = [' ' as u8;MAX_FILE_BYTES];
+        // let mut window_content_buffer = [' '; (WINDOW_WIDTH-2) * (WINDOW_HEIGHT-2)];
+        // let contents = self.filesystem.read(fd, &mut content_buffer).unwrap();
+        // self.filesystem.close(fd);
+        // for i in 0..((WINDOW_WIDTH-2) * (WINDOW_HEIGHT-2)){
+        //     window_content_buffer[i] = content_buffer[i] as char;
+        // }
+        // println!("{:?}",window_content_buffer);
+        // panic!();
+        println!("{:?}", self.filesystem.open_stuff()); 
+        panic!();
         let mut content_buff = [' '; (WINDOW_WIDTH-2)*(WINDOW_HEIGHT-2)];
         let mut char_count = 0;
 
@@ -625,8 +644,11 @@ impl Kernel {
             let contents = self.filesystem.read(fd, &mut content_buffer).unwrap();
             self.filesystem.close(fd);
             for i in 0..((WINDOW_WIDTH-2) * (WINDOW_HEIGHT-2)){
+                
                 window_content_buffer[i] = content_buffer[i] as char;
             }
+            // println!("{:?}", window_content_buffer);
+            // panic!();
             self.write_to_window(1, window_content_buffer)
         }
         else if self.in_use == 2{

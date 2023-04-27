@@ -64,7 +64,7 @@ dependencies = [
 [[package]]
 name = "file_system"
 version = "0.1.0"
-source = "git+https://github.com/ianc02/file_system#7a9644355d7a213d8b37b8de81d476deb0f20e10"
+source = "git+https://github.com/ianc02/file_system#ded7925ec7fdf4e1f4d91f37b2c0d44125b0f425"
 dependencies = [
  "ramdisk",
 ]
