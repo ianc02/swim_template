@@ -1,7 +1,6 @@
 #![no_std]
 #![feature(prelude_2024)]
 
-//use filesystem::FileSystem;
 use file_system::FileSystem;
 use gc_heap::CopyingHeap;
 //use alloc::string::String;
