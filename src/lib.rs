@@ -174,7 +174,7 @@ impl Window {
     }
     pub fn edit_press_enter(&mut self){
         let row = (self.current_contents_index / (WINDOW_WIDTH-2)) + 1;
-        if row < WINDOW_HEIGHT{
+        if row < WINDOW_HEIGHT-2 {
             let mut count = 0;
             //self.type_char(' ');
             // for i in (self.current_contents_index+1)..(row*(WINDOW_WIDTH-2)+2){
@@ -196,18 +196,29 @@ impl Window {
         
     }
     pub fn type_char(&mut self, c: char){  //backspace error dont increment
-        if c=='\n'{
-            self.contents[self.current_contents_index/(WINDOW_WIDTH-2)][self.current_contents_index%(WINDOW_WIDTH-2)] = ' ';
-        }
-        else{
-            self.contents[self.current_contents_index/(WINDOW_WIDTH-2)][self.current_contents_index%(WINDOW_WIDTH-2)] = c;
-        }
-        //self.contents[self.current_contents_index/(WINDOW_WIDTH-2)][self.current_contents_index%(WINDOW_WIDTH-2)] = c;
-        self.all_contents_u8[self.current_u8_index] = c as u8;
-        self.update_contents(self.contents);
-        if (c!='\0'){
-            self.current_contents_index+=1;
-            self.current_u8_index +=1;
+        if self.current_contents_index != (WINDOW_WIDTH-2)*(WINDOW_HEIGHT-2){
+            if c=='\n'{
+                self.contents[self.current_contents_index/(WINDOW_WIDTH-2)][self.current_contents_index%(WINDOW_WIDTH-2)] = ' ';
+            }
+            else{
+                self.contents[self.current_contents_index/(WINDOW_WIDTH-2)][self.current_contents_index%(WINDOW_WIDTH-2)] = c;
+            }
+            //self.contents[self.current_contents_index/(WINDOW_WIDTH-2)][self.current_contents_index%(WINDOW_WIDTH-2)] = c;
+            self.all_contents_u8[self.current_u8_index] = c as u8;
+            self.update_contents(self.contents);
+            if (c!='\0'){
+                self.current_contents_index+=1;
+                self.current_u8_index +=1;
+            }
+            else{
+                if self.current_contents_index > 1{
+                    if (self.contents[(self.current_contents_index-1)/(WINDOW_WIDTH-2)][(self.current_contents_index-1)%(WINDOW_WIDTH-2)] == '\0' || (self.contents[(self.current_contents_index-1)/(WINDOW_WIDTH-2)][(self.current_contents_index-1)%(WINDOW_WIDTH-2)] == ' ' && self.contents[(self.current_contents_index-2)/(WINDOW_WIDTH-2)][(self.current_contents_index-2)%(WINDOW_WIDTH-2)] == '\0')) && (self.current_contents_index)%(WINDOW_WIDTH-2) !=0{
+                        self.current_contents_index-=1;
+                        self.type_char('\0');
+                    }
+                }
+                self.current_u8_index = self.current_contents_index;
+            }
         }
     }
     pub fn reset_colors(&mut self){
@@ -312,6 +323,9 @@ pub struct Kernel {
     running: bool,
     waiting: bool,
     input_flag: bool,
+    input_flag1: bool,
+    input_flag2: bool,
+    input_flag3: bool,
     run_input: [char; 20],
     ri_index: usize,
     process_ran: usize,
@@ -431,7 +445,7 @@ impl Kernel {
         let mut run_input = ['\0'; 20];
         let mut num_ticks = [0;4];
         //let mut bool_f4 = (false, false);
-        Self{screen, background_color: Color::Black, task_manager, top_row, quad_f1, quad_f2, quad_f3, quad_f4, user_is_typing: false, in_use, user_input, current_user_input_index: FILENAME_PROMPT.len(), filesystem,  total_ticks: 0, is_blocked, is_running,instructions_executed, foreground, background, editing: false, int_f1, int_f2, int_f3, bool_f1,bool_f2,bool_f3, running: false, waiting: false, input_flag, run_input, ri_index: 0, process_ran:0,turn_index:0,num_ticks,}
+        Self{screen, background_color: Color::Black, task_manager, top_row, quad_f1, quad_f2, quad_f3, quad_f4, user_is_typing: false, in_use, user_input, current_user_input_index: FILENAME_PROMPT.len(), filesystem,  total_ticks: 0, is_blocked, is_running,instructions_executed, foreground, background, editing: false, int_f1, int_f2, int_f3, bool_f1,bool_f2,bool_f3, running: false, waiting: false, input_flag, run_input, ri_index: 0, process_ran:0,turn_index:0,num_ticks,input_flag1: false, input_flag2: false, input_flag3: false}
 
     }
 
@@ -630,7 +644,7 @@ impl Kernel {
                     self.running = false;
                     if self.in_use == 1{
                         self.bool_f1 = (false, false);
-                        self.input_flag = false;
+                        self.input_flag1 = false;
                         self.wait_check();
                         self.ri_index = 0;
                         self.run_input = ['\0';20];
@@ -641,7 +655,7 @@ impl Kernel {
                     }
                     else if self.in_use == 2{
                         self.bool_f2 = (false, false);
-                        self.input_flag = false;
+                        self.input_flag2 = false;
                         self.wait_check();
                         self.ri_index = 0;
                         self.run_input = ['\0';20];
@@ -651,7 +665,7 @@ impl Kernel {
                     }
                     else if self.in_use == 3{
                         self.bool_f3 = (false, false);
-                        self.input_flag = false;
+                        self.input_flag3 = false;
                         self.wait_check();
                         self.ri_index = 0;
                         self.run_input = ['\0';20];
@@ -662,6 +676,15 @@ impl Kernel {
                     self.default_window();
                 }
                 else{
+                    if self.in_use ==1{
+                        self.num_ticks[0]=0;
+                    }
+                    else if self.in_use ==2{
+                        self.num_ticks[1]=0;
+                    }
+                    else if self.in_use ==3{
+                        self.num_ticks[2] = 0;
+                    }
                     self.default_window();
                 }
             }
@@ -984,19 +1007,21 @@ impl Kernel {
         self.wait_check();
         if (self.waiting){
             if key=='\n'  { 
-                self.input_flag = true;
                 if self.in_use == 1{
                     self.bool_f1.1 = false;
                     self.quad_f1.edit_press_enter();
+                    self.input_flag1 = true;
                 }
                 //else if ...
                 else if self.in_use == 2{
                     self.bool_f2.1 = false;
                     self.quad_f2.edit_press_enter();
+                    self.input_flag2 = true;
                 }
                 else if self.in_use == 3{
                     self.bool_f3.1 = false;
                     self.quad_f3.edit_press_enter();
+                    self.input_flag3 = true;
                 }
                 self.wait_check();
                 
@@ -1029,13 +1054,14 @@ impl Kernel {
 
     pub fn edit_file_text(&mut self, key: char){
         if self.in_use==1{
-            if key=='\u{8}'{
-                //self.quad_f1.find_contents_index();
-                self.quad_f1.find_u8_index();
-                self.quad_f1.current_contents_index = self.quad_f1.current_contents_index-1;
-                self.quad_f1.current_u8_index = self.quad_f1.current_u8_index-1;
-                
-                self.quad_f1.type_char('\0');
+            if key=='\u{8}' {
+                if (self.quad_f1.current_contents_index > 0){
+                    self.quad_f1.find_u8_index();
+                    self.quad_f1.current_contents_index = self.quad_f1.current_contents_index-1;
+                    self.quad_f1.current_u8_index = self.quad_f1.current_u8_index-1;
+                    
+                    self.quad_f1.type_char('\0');
+                }
             }
             else if key=='\n'{
                 self.quad_f1.edit_press_enter();
@@ -1049,11 +1075,13 @@ impl Kernel {
         else if self.in_use==2{
             if key=='\u{8}'{
                 //self.quad_f1.find_contents_index();
-                self.quad_f2.find_u8_index();
-                self.quad_f2.current_contents_index = self.quad_f2.current_contents_index-1;
-                self.quad_f2.current_u8_index = self.quad_f2.current_u8_index-1;
-                
-                self.quad_f2.type_char('\0');
+                if (self.quad_f2.current_contents_index > 0){
+                    self.quad_f2.find_u8_index();
+                    self.quad_f2.current_contents_index = self.quad_f2.current_contents_index-1;
+                    self.quad_f2.current_u8_index = self.quad_f2.current_u8_index-1;
+                    
+                    self.quad_f2.type_char('\0');
+                }
             }
             else if key=='\n'{
                 self.quad_f2.edit_press_enter();
@@ -1067,11 +1095,13 @@ impl Kernel {
         else if self.in_use==3{
             if key=='\u{8}'{
                 //self.quad_f1.find_contents_index();
-                self.quad_f3.find_u8_index();
-                self.quad_f3.current_contents_index = self.quad_f3.current_contents_index-1;
-                self.quad_f3.current_u8_index = self.quad_f3.current_u8_index-1;
-                
-                self.quad_f3.type_char('\0');
+                if (self.quad_f3.current_contents_index > 0){
+                    self.quad_f3.find_u8_index();
+                    self.quad_f3.current_contents_index = self.quad_f3.current_contents_index-1;
+                    self.quad_f3.current_u8_index = self.quad_f3.current_u8_index-1;
+                    
+                    self.quad_f3.type_char('\0');
+                }
             }
             else if key=='\n'{
                 self.quad_f3.edit_press_enter();
@@ -1084,12 +1114,14 @@ impl Kernel {
         }
         else if self.in_use==4{
             if key=='\u{8}'{
-                //self.quad_f1.find_contents_index();
-                self.quad_f4.find_u8_index();
-                self.quad_f4.current_contents_index = self.quad_f4.current_contents_index-1;
-                self.quad_f4.current_u8_index = self.quad_f4.current_u8_index-1;
-                
-                self.quad_f4.type_char('\0');
+                if (self.quad_f4.current_contents_index > 0){
+                    //self.quad_f1.find_contents_index();
+                    self.quad_f4.find_u8_index();
+                    self.quad_f4.current_contents_index = self.quad_f4.current_contents_index-1;
+                    self.quad_f4.current_u8_index = self.quad_f4.current_u8_index-1;
+                    
+                    self.quad_f4.type_char('\0');
+                }
             }
             else if key=='\n'{
                 self.quad_f4.edit_press_enter();
@@ -1241,10 +1273,10 @@ impl Kernel {
             if (!self.bool_f1.1){
                 self.running = true;
                 //input stuff here
-                if self.input_flag{
+                if self.input_flag1{
                     self.int_f1.provide_input(&self.run_input[0..self.ri_index]);
                     self.ri_index = 0;
-                    self.input_flag = false;
+                    self.input_flag1 = false;
                 }
                 self.quad_f1.reset_colors();
                 self.draw();
@@ -1292,10 +1324,10 @@ impl Kernel {
             if (!self.bool_f2.1){
                 self.running = true;
                 //input stuff here
-                if self.input_flag{
+                if self.input_flag2{
                     self.int_f2.provide_input(&self.run_input[0..self.ri_index]);
                     self.ri_index = 0;
-                    self.input_flag = false;
+                    self.input_flag2 = false;
                 }
                 self.quad_f2.reset_colors();
                 self.draw();
@@ -1342,10 +1374,10 @@ impl Kernel {
             if (!self.bool_f3.1){
                 self.running = true;
                 //input stuff here
-                if self.input_flag{
+                if self.input_flag3{
                     self.int_f3.provide_input(&self.run_input[0..self.ri_index]);
                     self.ri_index = 0;
-                    self.input_flag = false;
+                    self.input_flag3 = false;
                 }
                 self.quad_f3.reset_colors();
                 self.draw();
