@@ -229,8 +229,8 @@ impl Window {
         let row = ((self.current_highlighted) /3) + 1;
         let col = self.current_highlighted % 3;
         for i in 0..MAX_FILENAME_BYTES{
-            self.foreground[row][(col*10) + i] = Color::Black;
-            self.background[row][(col*10) + i] = Color::White;
+            self.foreground[row][((col*10)+1) + i] = Color::Black;
+            self.background[row][((col*10)+1) + i] = Color::White;
         }
     }
     pub fn update_borders(&mut self){
@@ -494,19 +494,21 @@ impl Kernel {
         // println!("{:?}",window_content_buffer);
         // panic!();
        
-        let mut content_buff = ['\0'; (WINDOW_WIDTH-2)*(WINDOW_HEIGHT-2)];
-        let mut char_count = 0;
+        // let mut content_buff = ['\0'; (WINDOW_WIDTH-2)*(WINDOW_HEIGHT-2)];
+        // let mut char_count = 0;
 
-        for i in self.filesystem.list_directory().unwrap().1{
-            for j in i{
-                content_buff[char_count] = j as char;
-                char_count +=1;
-            }
+        // for i in self.filesystem.list_directory().unwrap().1{
+        //     for j in i{
+        //         content_buff[char_count] = j as char;
+        //         char_count +=1;
+        //     }
             
-        }
+        // }
         for i in 1..5 as usize{
-            self.write_to_window(i, content_buff);
+            self.in_use = i;
+            self.default_window();
         }
+        self.in_use = 0;
         
 
 
@@ -642,6 +644,7 @@ impl Kernel {
                     
                     self.running = false;
                     if self.in_use == 1{
+                        self.quad_f1.is_being_edited =false;
                         self.bool_f1 = (false, false);
                         self.input_flag1 = false;
                         self.wait_check();
@@ -747,6 +750,13 @@ impl Kernel {
             self.quad_f3.reset_colors();
             self.quad_f3.update_borders();
             self.quad_f3.find_contents_index();
+            self.write_to_window(3, content_buff);
+        }
+        else if self.in_use ==4{
+            self.quad_f4.is_being_edited = false;
+            self.quad_f4.reset_colors();
+            self.quad_f4.update_borders();
+            self.quad_f4.find_contents_index();
             self.write_to_window(3, content_buff);
         }
     }
@@ -1216,6 +1226,8 @@ impl Kernel {
 
         if self.in_use == 1 && !self.bool_f1.0{
             
+            self.quad_f1.is_being_edited = true;
+            self.quad_f1.reset_colors();
             let u8_name =self.filesystem.list_directory().unwrap().1[self.quad_f1.current_highlighted];
             self.quad_f1.current_file = u8_name;
             let str_name = core::str::from_utf8(&u8_name).unwrap();
